@@ -1,7 +1,7 @@
 # 📊 Portfolio Tracker
 
-Automatyczny tygodniowy raport dla 21 pozycji — kursy, trendy, newsy.  
-Aktualizuje się co niedzielę o 18:00 (czas polski). Hosting na GitHub Pages. **Koszt: 0 zł.**
+Automatyczny codzienny raport dla 21 pozycji — kursy, trendy, newsy.  
+Aktualizuje się codziennie o 18:00 (czas polski). Hosting na GitHub Pages.
 
 ---
 
