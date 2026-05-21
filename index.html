@@ -6,213 +6,200 @@
 <title>Portfolio Tracker</title>
 <style>
   :root {
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --border: #334155;
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --positive: #22c55e;
-    --negative: #ef4444;
-    --neutral: #94a3b8;
-    --accent: #38bdf8;
+    --bg:#0f172a; --surface:#1e293b; --border:#334155; --text:#e2e8f0;
+    --muted:#94a3b8; --positive:#22c55e; --negative:#ef4444; --neutral:#94a3b8; --accent:#38bdf8;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; padding: 1rem; }
-  header { text-align: center; padding: 1.5rem 0 1rem; }
-  header h1 { font-size: 1.6rem; color: var(--accent); }
-  header p  { color: var(--muted); font-size: .85rem; margin-top: .3rem; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; max-width: 1400px; margin: 0 auto; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: .7rem; }
-  .card.error { border-color: var(--negative); opacity: .7; }
-  .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; }
-  .name { font-size: 1rem; font-weight: 600; }
-  .ticker { display: inline-block; background: #0f172a; color: var(--accent); border-radius: 6px; padding: 2px 7px; font-size: .75rem; margin-top: 3px; }
-  .price { font-size: 1.25rem; font-weight: 700; }
-  .price small { font-size: .7rem; color: var(--muted); }
-  .price-block { text-align: right; }
-  .badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .8rem; font-weight: 600; margin-top: 4px; }
-  .badge.positive { background: rgba(34,197,94,.15); color: var(--positive); }
-  .badge.negative { background: rgba(239,68,68,.15);  color: var(--negative); }
-  .badge.neutral  { background: rgba(148,163,184,.15); color: var(--neutral); }
-  .sparkline { width: 100%; height: 50px; display: block; }
-  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: .5rem; }
-  .stat { background: #0f172a; border-radius: 8px; padding: .4rem .5rem; text-align: center; }
-  .stat label { display: block; font-size: .65rem; color: var(--muted); margin-bottom: 2px; }
-  .stat span { font-size: .85rem; font-weight: 600; }
-  .positive { color: var(--positive); }
-  .negative { color: var(--negative); }
-  .neutral  { color: var(--neutral);  }
-  .trend-row { font-size: .85rem; color: var(--muted); }
-  .trend { font-weight: 600; }
-  .trend.up   { color: var(--positive); }
-  .trend.down { color: var(--negative); }
-  .trend.side { color: var(--neutral); }
-  .news-block { border-top: 1px solid var(--border); padding-top: .6rem; }
-  .news-title { font-size: .75rem; color: var(--muted); margin-bottom: .4rem; }
-  .news-item { display: block; font-size: .78rem; color: var(--text); text-decoration: none; padding: 3px 0; border-bottom: 1px solid #1e293b; line-height: 1.4; }
-  .news-item:hover { color: var(--accent); }
-  .news-date { color: var(--muted); font-size: .7rem; margin-right: 4px; }
-  .no-news { font-size: .78rem; color: var(--muted); }
-  .err-msg { color: var(--negative); font-size: .85rem; }
-  footer { text-align: center; padding: 2rem 0 1rem; color: var(--muted); font-size: .8rem; }
-  @media (max-width: 500px) { .stats-row { grid-template-columns: 1fr 1fr; } }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;padding:1rem}
+  header{text-align:center;padding:1.5rem 0 1rem}
+  header h1{font-size:1.6rem;color:var(--accent)}
+  header p{color:var(--muted);font-size:.85rem;margin-top:.3rem}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;max-width:1400px;margin:0 auto}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:.7rem}
+  .card.error{border-color:var(--negative);opacity:.7}
+  .card-header{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem}
+  .name{font-size:1rem;font-weight:600}
+  .ticker{display:inline-block;background:#0f172a;color:var(--accent);border-radius:6px;padding:2px 7px;font-size:.75rem;margin-top:3px}
+  .price{font-size:1.25rem;font-weight:700}
+  .price small{font-size:.7rem;color:var(--muted)}
+  .price-block{text-align:right}
+  .badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.8rem;font-weight:600;margin-top:4px}
+  .badge.positive{background:rgba(34,197,94,.15);color:var(--positive)}
+  .badge.negative{background:rgba(239,68,68,.15);color:var(--negative)}
+  .badge.neutral{background:rgba(148,163,184,.15);color:var(--neutral)}
+  .sparkline{width:100%;height:50px;display:block}
+  .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.5rem}
+  .stat{background:#0f172a;border-radius:8px;padding:.4rem .5rem;text-align:center}
+  .stat label{display:block;font-size:.65rem;color:var(--muted);margin-bottom:2px}
+  .stat span{font-size:.85rem;font-weight:600}
+  .positive{color:var(--positive)} .negative{color:var(--negative)} .neutral{color:var(--neutral)}
+  .trend-row{font-size:.85rem;color:var(--muted)}
+  .trend{font-weight:600}
+  .trend.up{color:var(--positive)} .trend.down{color:var(--negative)} .trend.side{color:var(--neutral)}
+  .news-block{border-top:1px solid var(--border);padding-top:.6rem}
+  .news-title{font-size:.75rem;color:var(--muted);margin-bottom:.4rem}
+  .news-item{display:block;font-size:.78rem;color:var(--text);text-decoration:none;padding:3px 0;border-bottom:1px solid #1e293b;line-height:1.4}
+  .news-item:hover{color:var(--accent)}
+  .news-date{color:var(--muted);font-size:.7rem;margin-right:4px}
+  .no-news{font-size:.78rem;color:var(--muted)}
+  .err-msg{color:var(--negative);font-size:.85rem}
+  footer{text-align:center;padding:2rem 0 1rem;color:var(--muted);font-size:.8rem}
+  @media(max-width:500px){.stats-row{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <header>
   <h1>📊 Portfolio Tracker</h1>
-  <p>Ostatnia aktualizacja: 21.05.2026 16:18 UTC &nbsp;|&nbsp; 21 pozycji</p>
+  <p>Ostatnia aktualizacja: 21.05.2026 16:27 UTC &nbsp;|&nbsp; 21 pozycji</p>
 </header>
 <div class="grid">
-
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Nutrien</span>
                     <span class="ticker">NTR</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Kazatomprom</span>
                     <span class="ticker">KAP.L</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Cameco</span>
                     <span class="ticker">CCJ</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Energy Fuels</span>
                     <span class="ticker">UUUU</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Chevron</span>
                     <span class="ticker">CVX</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Global Infrastructure ETF</span>
                     <span class="ticker">IDIN.L</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Equinor</span>
                     <span class="ticker">EQNR</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Exxon Mobil</span>
                     <span class="ticker">XOM</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Dywidenda Plus ETF</span>
                     <span class="ticker">ETFBDIVPL.WA</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Enbridge</span>
                     <span class="ticker">ENB</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">S&P 500 Energy ETF</span>
                     <span class="ticker">IUES.L</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">MSCI World Energy ETF</span>
                     <span class="ticker">XDW0.DE</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">TC Energy</span>
                     <span class="ticker">TRP</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Targa Resources</span>
                     <span class="ticker">TRGP</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Rio Tinto</span>
                     <span class="ticker">RIO.L</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">BHP Group</span>
                     <span class="ticker">BHP.L</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Talen Energy</span>
                     <span class="ticker">TLN</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Vistra Energy</span>
                     <span class="ticker">VST</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Constellation Energy</span>
                     <span class="ticker">CEG</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">ServiceNow</span>
                     <span class="ticker">NOW</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>
             <div class="card error">
                 <div class="card-header">
                     <span class="name">Freeport-McMoRan</span>
                     <span class="ticker">FCX</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
-            </div>
-</div>
-<footer>Dane z Yahoo Finance &amp; Google News · Aktualizacja co tydzień (GitHub Actions)</footer>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
+            </div></div>
+<footer>Dane z Yahoo Finance &amp; Google News · Aktualizacja co niedziela (GitHub Actions)</footer>
 </body>
 </html>
