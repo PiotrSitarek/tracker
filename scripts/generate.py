@@ -36,10 +36,13 @@ def fetch_stock_data(ticker_symbol):
         if hist is None or hist.empty:
             return None
 
-        current_price = hist["Close"].iloc[-1]
-        prev_close    = hist["Close"].iloc[-2] if len(hist) > 1 else current_price
-        week_ago      = hist["Close"].iloc[-6]  if len(hist) > 5  else hist["Close"].iloc[0]
-        month_ago     = hist["Close"].iloc[-22] if len(hist) > 21 else hist["Close"].iloc[0]
+        closes = hist["Close"].tolist()
+        dates  = [str(d.date()) for d in hist.index.tolist()]
+
+        current_price = closes[-1]
+        prev_close    = closes[-2] if len(closes) > 1 else current_price
+        week_ago      = closes[-6]  if len(closes) > 5  else closes[0]
+        month_ago     = closes[-22] if len(closes) > 21 else closes[0]
         high_52w      = hist["High"].max()
         low_52w       = hist["Low"].min()
 
@@ -48,9 +51,9 @@ def fetch_stock_data(ticker_symbol):
         change_month = ((current_price - month_ago)  / month_ago)  * 100
         from_52h     = ((current_price - high_52w)   / high_52w)   * 100
 
-        if len(hist) >= 50:
-            sma20 = hist["Close"].tail(20).mean()
-            sma50 = hist["Close"].tail(50).mean()
+        if len(closes) >= 50:
+            sma20 = sum(closes[-20:]) / 20
+            sma50 = sum(closes[-50:]) / 50
             if sma20 > sma50 * 1.02:
                 trend, trend_class = "↑ Wzrostowy", "up"
             elif sma20 < sma50 * 0.98:
@@ -60,8 +63,8 @@ def fetch_stock_data(ticker_symbol):
         else:
             trend, trend_class = "— Brak danych", "side"
 
-        closes = hist["Close"].tail(60).tolist()
-        dates  = [str(d.date()) for d in hist.index.tail(60)]
+        closes = closes[-60:]
+        dates  = dates[-60:]
 
         return {
             "price":        round(float(current_price), 2),
