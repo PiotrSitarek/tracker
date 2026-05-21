@@ -1,87 +1,76 @@
 import yfinance as yf
-import json
 import os
-from datetime import datetime, timedelta
 import urllib.request
 import xml.etree.ElementTree as ET
+from datetime import datetime
 
 PORTFOLIO = [
-    {"name": "Nutrien",                   "ticker": "NTR",         "currency": "USD"},
-    {"name": "Kazatomprom",               "ticker": "KAP.L",       "currency": "GBp"},
-    {"name": "Cameco",                    "ticker": "CCJ",         "currency": "USD"},
-    {"name": "Energy Fuels",              "ticker": "UUUU",        "currency": "USD"},
-    {"name": "Chevron",                   "ticker": "CVX",         "currency": "USD"},
-    {"name": "Global Infrastructure ETF", "ticker": "IDIN.L",      "currency": "GBp"},
-    {"name": "Equinor",                   "ticker": "EQNR",        "currency": "USD"},
-    {"name": "Exxon Mobil",               "ticker": "XOM",         "currency": "USD"},
-    {"name": "Dywidenda Plus ETF",        "ticker": "ETFBDIVPL.WA","currency": "PLN"},
-    {"name": "Enbridge",                  "ticker": "ENB",         "currency": "USD"},
-    {"name": "S&P 500 Energy ETF",        "ticker": "IUES.L",      "currency": "GBp"},
-    {"name": "MSCI World Energy ETF",     "ticker": "XDW0.DE",     "currency": "EUR"},
-    {"name": "TC Energy",                 "ticker": "TRP",         "currency": "USD"},
-    {"name": "Targa Resources",           "ticker": "TRGP",        "currency": "USD"},
-    {"name": "Rio Tinto",                 "ticker": "RIO.L",       "currency": "GBp"},
-    {"name": "BHP Group",                 "ticker": "BHP.L",       "currency": "GBp"},
-    {"name": "Talen Energy",              "ticker": "TLN",         "currency": "USD"},
-    {"name": "Vistra Energy",             "ticker": "VST",         "currency": "USD"},
-    {"name": "Constellation Energy",      "ticker": "CEG",         "currency": "USD"},
-    {"name": "ServiceNow",                "ticker": "NOW",         "currency": "USD"},
-    {"name": "Freeport-McMoRan",          "ticker": "FCX",         "currency": "USD"},
+    {"name": "Nutrien",                   "ticker": "NTR",          "currency": "USD"},
+    {"name": "Kazatomprom",               "ticker": "KAP.L",        "currency": "GBp"},
+    {"name": "Cameco",                    "ticker": "CCJ",          "currency": "USD"},
+    {"name": "Energy Fuels",              "ticker": "UUUU",         "currency": "USD"},
+    {"name": "Chevron",                   "ticker": "CVX",          "currency": "USD"},
+    {"name": "Global Infrastructure ETF", "ticker": "IDIN.L",       "currency": "GBp"},
+    {"name": "Equinor",                   "ticker": "EQNR",         "currency": "USD"},
+    {"name": "Exxon Mobil",               "ticker": "XOM",          "currency": "USD"},
+    {"name": "Dywidenda Plus ETF",        "ticker": "ETFBDIVPL.WA", "currency": "PLN"},
+    {"name": "Enbridge",                  "ticker": "ENB",          "currency": "USD"},
+    {"name": "S&P 500 Energy ETF",        "ticker": "IUES.L",       "currency": "GBp"},
+    {"name": "MSCI World Energy ETF",     "ticker": "XDW0.DE",      "currency": "EUR"},
+    {"name": "TC Energy",                 "ticker": "TRP",          "currency": "USD"},
+    {"name": "Targa Resources",           "ticker": "TRGP",         "currency": "USD"},
+    {"name": "Rio Tinto",                 "ticker": "RIO.L",        "currency": "GBp"},
+    {"name": "BHP Group",                 "ticker": "BHP.L",        "currency": "GBp"},
+    {"name": "Talen Energy",              "ticker": "TLN",          "currency": "USD"},
+    {"name": "Vistra Energy",             "ticker": "VST",          "currency": "USD"},
+    {"name": "Constellation Energy",      "ticker": "CEG",          "currency": "USD"},
+    {"name": "ServiceNow",                "ticker": "NOW",          "currency": "USD"},
+    {"name": "Freeport-McMoRan",          "ticker": "FCX",          "currency": "USD"},
 ]
 
 def fetch_stock_data(ticker_symbol):
-    """Pobiera dane giełdowe dla tickera."""
     try:
         ticker = yf.Ticker(ticker_symbol)
         hist = ticker.history(period="6mo")
-        info = ticker.fast_info
 
-        if hist.empty:
+        if hist is None or hist.empty:
             return None
 
         current_price = hist["Close"].iloc[-1]
         prev_close    = hist["Close"].iloc[-2] if len(hist) > 1 else current_price
-        week_ago      = hist["Close"].iloc[-6] if len(hist) > 5 else hist["Close"].iloc[0]
+        week_ago      = hist["Close"].iloc[-6]  if len(hist) > 5  else hist["Close"].iloc[0]
         month_ago     = hist["Close"].iloc[-22] if len(hist) > 21 else hist["Close"].iloc[0]
         high_52w      = hist["High"].max()
         low_52w       = hist["Low"].min()
-        volume        = int(hist["Volume"].iloc[-1])
 
-        change_day  = ((current_price - prev_close) / prev_close) * 100
-        change_week = ((current_price - week_ago)   / week_ago)   * 100
-        change_month= ((current_price - month_ago)  / month_ago)  * 100
-        from_52h    = ((current_price - high_52w)   / high_52w)   * 100
+        change_day   = ((current_price - prev_close) / prev_close) * 100
+        change_week  = ((current_price - week_ago)   / week_ago)   * 100
+        change_month = ((current_price - month_ago)  / month_ago)  * 100
+        from_52h     = ((current_price - high_52w)   / high_52w)   * 100
 
-        # Prosty trend: SMA20 vs SMA50
         if len(hist) >= 50:
             sma20 = hist["Close"].tail(20).mean()
             sma50 = hist["Close"].tail(50).mean()
             if sma20 > sma50 * 1.02:
-                trend = "↑ Wzrostowy"
-                trend_class = "up"
+                trend, trend_class = "↑ Wzrostowy", "up"
             elif sma20 < sma50 * 0.98:
-                trend = "↓ Spadkowy"
-                trend_class = "down"
+                trend, trend_class = "↓ Spadkowy", "down"
             else:
-                trend = "→ Boczny"
-                trend_class = "side"
+                trend, trend_class = "→ Boczny", "side"
         else:
-            trend = "— Brak danych"
-            trend_class = "side"
+            trend, trend_class = "— Brak danych", "side"
 
-        # Dane do wykresu sparkline (ostatnie 60 sesji)
         closes = hist["Close"].tail(60).tolist()
         dates  = [str(d.date()) for d in hist.index.tail(60)]
 
         return {
-            "price":        round(current_price, 2),
-            "change_day":   round(change_day, 2),
-            "change_week":  round(change_week, 2),
-            "change_month": round(change_month, 2),
-            "high_52w":     round(high_52w, 2),
-            "low_52w":      round(low_52w, 2),
-            "from_52h":     round(from_52h, 2),
-            "volume":       volume,
+            "price":        round(float(current_price), 2),
+            "change_day":   round(float(change_day), 2),
+            "change_week":  round(float(change_week), 2),
+            "change_month": round(float(change_month), 2),
+            "high_52w":     round(float(high_52w), 2),
+            "low_52w":      round(float(low_52w), 2),
+            "from_52h":     round(float(from_52h), 2),
             "trend":        trend,
             "trend_class":  trend_class,
             "chart_closes": closes,
@@ -93,8 +82,7 @@ def fetch_stock_data(ticker_symbol):
 
 
 def fetch_news(company_name, ticker_symbol):
-    """Pobiera newsy z Google News RSS."""
-    query = f"{company_name} {ticker_symbol} stock".replace(" ", "+")
+    query = f"{company_name} stock".replace(" ", "+")
     url = f"https://news.google.com/rss/search?q={query}&hl=en-US&gl=US&ceid=US:en"
     items = []
     try:
@@ -105,11 +93,10 @@ def fetch_news(company_name, ticker_symbol):
             channel = root.find("channel")
             if channel is None:
                 return items
-            for item in channel.findall("item")[:4]:
+            for item in channel.findall("item")[:3]:
                 title = item.findtext("title", "")
                 link  = item.findtext("link", "#")
                 pub   = item.findtext("pubDate", "")
-                # Skróć datę do czytelnej formy
                 try:
                     dt = datetime.strptime(pub, "%a, %d %b %Y %H:%M:%S %Z")
                     pub_fmt = dt.strftime("%d.%m.%Y")
@@ -122,13 +109,11 @@ def fetch_news(company_name, ticker_symbol):
 
 
 def generate_html(portfolio_data):
-    """Generuje plik index.html."""
     generated_at = datetime.utcnow().strftime("%d.%m.%Y %H:%M UTC")
 
-    # Kolor zmiany
     def color(val):
-        if val > 0:   return "positive"
-        if val < 0:   return "negative"
+        if val > 0: return "positive"
+        if val < 0: return "negative"
         return "neutral"
 
     def arrow(val):
@@ -136,12 +121,11 @@ def generate_html(portfolio_data):
         if val < 0: return "▼"
         return "–"
 
-    # Karty spółek
     cards_html = ""
     for item in portfolio_data:
-        d = item["data"]
-        n = item["name"]
-        t = item["ticker"]
+        d   = item["data"]
+        n   = item["name"]
+        t   = item["ticker"]
         cur = item["currency"]
         news = item["news"]
 
@@ -152,40 +136,33 @@ def generate_html(portfolio_data):
                     <span class="name">{n}</span>
                     <span class="ticker">{t}</span>
                 </div>
-                <p class="err-msg">Brak danych — sprawdź ticker</p>
+                <p class="err-msg">⚠️ Brak danych — ticker niedostępny</p>
             </div>"""
             continue
 
-        # Sparkline mini-wykres (SVG inline)
         closes = d["chart_closes"]
-        if closes:
+        if closes and len(closes) > 1:
             mn, mx = min(closes), max(closes)
             rng = mx - mn if mx != mn else 1
             pts = []
             w, h = 200, 50
             for i, c in enumerate(closes):
-                x = int(i / (len(closes)-1) * w) if len(closes) > 1 else w//2
-                y = int(h - ((c - mn) / rng) * h)
+                x = int(i / (len(closes) - 1) * w)
+                y = int(h - ((c - mn) / rng) * (h - 4) - 2)
                 pts.append(f"{x},{y}")
             polyline = " ".join(pts)
-            trend_color = "#22c55e" if d["trend_class"] == "up" else ("#ef4444" if d["trend_class"] == "down" else "#94a3b8")
-            sparkline = f"""<svg class="sparkline" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg">
-                <polyline points="{polyline}" fill="none" stroke="{trend_color}" stroke-width="2"/>
-            </svg>"""
+            tc = "#22c55e" if d["trend_class"] == "up" else ("#ef4444" if d["trend_class"] == "down" else "#94a3b8")
+            sparkline = f'<svg class="sparkline" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg"><polyline points="{polyline}" fill="none" stroke="{tc}" stroke-width="2"/></svg>'
         else:
             sparkline = ""
 
-        # Newsy
         news_html = ""
-        for nw in news[:3]:
+        for nw in news:
             news_html += f'<a href="{nw["link"]}" target="_blank" class="news-item"><span class="news-date">{nw["date"]}</span> {nw["title"]}</a>'
         if not news_html:
             news_html = '<span class="no-news">Brak newsów</span>'
 
-        cd  = d["change_day"]
-        cw  = d["change_week"]
-        cm  = d["change_month"]
-        f52 = d["from_52h"]
+        cd, cw, cm, f52 = d["change_day"], d["change_week"], d["change_month"], d["from_52h"]
 
         cards_html += f"""
         <div class="card">
@@ -199,39 +176,21 @@ def generate_html(portfolio_data):
                     <span class="badge {color(cd)}">{arrow(cd)} {abs(cd):.2f}% dziś</span>
                 </div>
             </div>
-
             {sparkline}
-
             <div class="stats-row">
-                <div class="stat">
-                    <label>Tydzień</label>
-                    <span class="{color(cw)}">{arrow(cw)} {abs(cw):.2f}%</span>
-                </div>
-                <div class="stat">
-                    <label>Miesiąc</label>
-                    <span class="{color(cm)}">{arrow(cm)} {abs(cm):.2f}%</span>
-                </div>
-                <div class="stat">
-                    <label>Od 52W max</label>
-                    <span class="{color(f52)}">{f52:.2f}%</span>
-                </div>
-                <div class="stat">
-                    <label>52W zakres</label>
-                    <span class="neutral">{d['low_52w']:,.2f} – {d['high_52w']:,.2f}</span>
-                </div>
+                <div class="stat"><label>Tydzień</label><span class="{color(cw)}">{arrow(cw)} {abs(cw):.2f}%</span></div>
+                <div class="stat"><label>Miesiąc</label><span class="{color(cm)}">{arrow(cm)} {abs(cm):.2f}%</span></div>
+                <div class="stat"><label>Od 52W max</label><span class="{color(f52)}">{f52:.2f}%</span></div>
+                <div class="stat"><label>52W zakres</label><span class="neutral">{d['low_52w']:,.2f} – {d['high_52w']:,.2f}</span></div>
             </div>
-
-            <div class="trend-row">
-                Trend: <span class="trend {d['trend_class']}">{d['trend']}</span>
-            </div>
-
+            <div class="trend-row">Trend: <span class="trend {d['trend_class']}">{d['trend']}</span></div>
             <div class="news-block">
                 <div class="news-title">📰 Newsy</div>
                 {news_html}
             </div>
         </div>"""
 
-    html = f"""<!DOCTYPE html>
+    return f"""<!DOCTYPE html>
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
@@ -239,56 +198,45 @@ def generate_html(portfolio_data):
 <title>Portfolio Tracker</title>
 <style>
   :root {{
-    --bg: #0f172a;
-    --surface: #1e293b;
-    --border: #334155;
-    --text: #e2e8f0;
-    --muted: #94a3b8;
-    --positive: #22c55e;
-    --negative: #ef4444;
-    --neutral: #94a3b8;
-    --accent: #38bdf8;
+    --bg:#0f172a; --surface:#1e293b; --border:#334155; --text:#e2e8f0;
+    --muted:#94a3b8; --positive:#22c55e; --negative:#ef4444; --neutral:#94a3b8; --accent:#38bdf8;
   }}
-  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-  body {{ background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; padding: 1rem; }}
-  header {{ text-align: center; padding: 1.5rem 0 1rem; }}
-  header h1 {{ font-size: 1.6rem; color: var(--accent); }}
-  header p  {{ color: var(--muted); font-size: .85rem; margin-top: .3rem; }}
-  .grid {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; max-width: 1400px; margin: 0 auto; }}
-  .card {{ background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; display: flex; flex-direction: column; gap: .7rem; }}
-  .card.error {{ border-color: var(--negative); opacity: .7; }}
-  .card-header {{ display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; }}
-  .name {{ font-size: 1rem; font-weight: 600; }}
-  .ticker {{ display: inline-block; background: #0f172a; color: var(--accent); border-radius: 6px; padding: 2px 7px; font-size: .75rem; margin-top: 3px; }}
-  .price {{ font-size: 1.25rem; font-weight: 700; }}
-  .price small {{ font-size: .7rem; color: var(--muted); }}
-  .price-block {{ text-align: right; }}
-  .badge {{ display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: .8rem; font-weight: 600; margin-top: 4px; }}
-  .badge.positive {{ background: rgba(34,197,94,.15); color: var(--positive); }}
-  .badge.negative {{ background: rgba(239,68,68,.15);  color: var(--negative); }}
-  .badge.neutral  {{ background: rgba(148,163,184,.15); color: var(--neutral); }}
-  .sparkline {{ width: 100%; height: 50px; display: block; }}
-  .stats-row {{ display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: .5rem; }}
-  .stat {{ background: #0f172a; border-radius: 8px; padding: .4rem .5rem; text-align: center; }}
-  .stat label {{ display: block; font-size: .65rem; color: var(--muted); margin-bottom: 2px; }}
-  .stat span {{ font-size: .85rem; font-weight: 600; }}
-  .positive {{ color: var(--positive); }}
-  .negative {{ color: var(--negative); }}
-  .neutral  {{ color: var(--neutral);  }}
-  .trend-row {{ font-size: .85rem; color: var(--muted); }}
-  .trend {{ font-weight: 600; }}
-  .trend.up   {{ color: var(--positive); }}
-  .trend.down {{ color: var(--negative); }}
-  .trend.side {{ color: var(--neutral); }}
-  .news-block {{ border-top: 1px solid var(--border); padding-top: .6rem; }}
-  .news-title {{ font-size: .75rem; color: var(--muted); margin-bottom: .4rem; }}
-  .news-item {{ display: block; font-size: .78rem; color: var(--text); text-decoration: none; padding: 3px 0; border-bottom: 1px solid #1e293b; line-height: 1.4; }}
-  .news-item:hover {{ color: var(--accent); }}
-  .news-date {{ color: var(--muted); font-size: .7rem; margin-right: 4px; }}
-  .no-news {{ font-size: .78rem; color: var(--muted); }}
-  .err-msg {{ color: var(--negative); font-size: .85rem; }}
-  footer {{ text-align: center; padding: 2rem 0 1rem; color: var(--muted); font-size: .8rem; }}
-  @media (max-width: 500px) {{ .stats-row {{ grid-template-columns: 1fr 1fr; }} }}
+  *{{box-sizing:border-box;margin:0;padding:0}}
+  body{{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;padding:1rem}}
+  header{{text-align:center;padding:1.5rem 0 1rem}}
+  header h1{{font-size:1.6rem;color:var(--accent)}}
+  header p{{color:var(--muted);font-size:.85rem;margin-top:.3rem}}
+  .grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;max-width:1400px;margin:0 auto}}
+  .card{{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;display:flex;flex-direction:column;gap:.7rem}}
+  .card.error{{border-color:var(--negative);opacity:.7}}
+  .card-header{{display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem}}
+  .name{{font-size:1rem;font-weight:600}}
+  .ticker{{display:inline-block;background:#0f172a;color:var(--accent);border-radius:6px;padding:2px 7px;font-size:.75rem;margin-top:3px}}
+  .price{{font-size:1.25rem;font-weight:700}}
+  .price small{{font-size:.7rem;color:var(--muted)}}
+  .price-block{{text-align:right}}
+  .badge{{display:inline-block;padding:2px 8px;border-radius:6px;font-size:.8rem;font-weight:600;margin-top:4px}}
+  .badge.positive{{background:rgba(34,197,94,.15);color:var(--positive)}}
+  .badge.negative{{background:rgba(239,68,68,.15);color:var(--negative)}}
+  .badge.neutral{{background:rgba(148,163,184,.15);color:var(--neutral)}}
+  .sparkline{{width:100%;height:50px;display:block}}
+  .stats-row{{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.5rem}}
+  .stat{{background:#0f172a;border-radius:8px;padding:.4rem .5rem;text-align:center}}
+  .stat label{{display:block;font-size:.65rem;color:var(--muted);margin-bottom:2px}}
+  .stat span{{font-size:.85rem;font-weight:600}}
+  .positive{{color:var(--positive)}} .negative{{color:var(--negative)}} .neutral{{color:var(--neutral)}}
+  .trend-row{{font-size:.85rem;color:var(--muted)}}
+  .trend{{font-weight:600}}
+  .trend.up{{color:var(--positive)}} .trend.down{{color:var(--negative)}} .trend.side{{color:var(--neutral)}}
+  .news-block{{border-top:1px solid var(--border);padding-top:.6rem}}
+  .news-title{{font-size:.75rem;color:var(--muted);margin-bottom:.4rem}}
+  .news-item{{display:block;font-size:.78rem;color:var(--text);text-decoration:none;padding:3px 0;border-bottom:1px solid #1e293b;line-height:1.4}}
+  .news-item:hover{{color:var(--accent)}}
+  .news-date{{color:var(--muted);font-size:.7rem;margin-right:4px}}
+  .no-news{{font-size:.78rem;color:var(--muted)}}
+  .err-msg{{color:var(--negative);font-size:.85rem}}
+  footer{{text-align:center;padding:2rem 0 1rem;color:var(--muted);font-size:.8rem}}
+  @media(max-width:500px){{.stats-row{{grid-template-columns:1fr 1fr}}}}
 </style>
 </head>
 <body>
@@ -296,13 +244,10 @@ def generate_html(portfolio_data):
   <h1>📊 Portfolio Tracker</h1>
   <p>Ostatnia aktualizacja: {generated_at} &nbsp;|&nbsp; {len(portfolio_data)} pozycji</p>
 </header>
-<div class="grid">
-{cards_html}
-</div>
-<footer>Dane z Yahoo Finance &amp; Google News · Aktualizacja co tydzień (GitHub Actions)</footer>
+<div class="grid">{cards_html}</div>
+<footer>Dane z Yahoo Finance &amp; Google News · Aktualizacja co niedziela (GitHub Actions)</footer>
 </body>
 </html>"""
-    return html
 
 
 def main():
@@ -325,7 +270,6 @@ def main():
         })
 
     html = generate_html(portfolio_data)
-
     out_path = os.path.join(os.path.dirname(__file__), "..", "index.html")
     with open(out_path, "w", encoding="utf-8") as f:
         f.write(html)

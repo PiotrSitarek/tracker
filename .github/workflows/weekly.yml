@@ -2,8 +2,8 @@ name: Weekly Portfolio Update
 
 on:
   schedule:
-    - cron: '0 16 * * 0'   # co niedzielę o 18:00 czasu polskiego (16:00 UTC)
-  workflow_dispatch:         # możliwość ręcznego odpalenia z poziomu GitHub
+    - cron: '0 16 * * 0'
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -22,7 +22,7 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install yfinance
+        run: pip install yfinance curl_cffi
 
       - name: Generate portfolio report
         run: python scripts/generate.py
